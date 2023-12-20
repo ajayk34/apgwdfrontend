@@ -4,6 +4,7 @@ import LoginPage from './LoginPage'
 import RegistrationPage from './RegistrationPage';
 import Welcome from './Welcome';
 import Admin from './Admin';
+import Jdmail from './Jointdirector/Jdmail';
 const App = () => {
   return (
     
@@ -13,6 +14,7 @@ const App = () => {
         <Route path='/registration' element={<RegistrationPage/>}/>
         <Route path='/employee' element={<Welcome/>}/>
         <Route path='/admin' element={<Admin/>}/>
+        <Route path='/jd' element={<Jdmail/>}/>
       </Routes>
       </BrowserRouter>
   )

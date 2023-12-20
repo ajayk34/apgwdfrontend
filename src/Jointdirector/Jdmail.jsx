@@ -56,7 +56,6 @@ const Jdmail = () => {
 
   return (
     <div>
-      <h1>Data:</h1>
       <ul>
         {data.map((item, index) => (
           <li key={index}>

@@ -64,6 +64,10 @@ const LoginPage = () => {
         designation==='employee' && (<Navigate to="/employee" replace={true} state={{district: gdistrict,name:us}}/>)
         
       }
+      {
+        designation==='jd' && (<Navigate to="/jd" replace={true}/>)
+        
+      }
       <h1>Login Page</h1>
       <form onSubmit={handleLoginSubmit}>
         <input
