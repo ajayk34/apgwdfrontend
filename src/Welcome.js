@@ -93,7 +93,7 @@ const Welcome = () => {
             </div>
           ))}
       </center>
-      {/* <Jdmail/> */}
+    
     </div>
 
   );

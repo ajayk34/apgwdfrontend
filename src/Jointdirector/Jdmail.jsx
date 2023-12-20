@@ -17,9 +17,9 @@ const fetchallwell = async (userDistrict) => {
   }
 };
 
-const sendEmail = (email, username, rcount, message) => {
+const sendEmail = (email, username, rcount, message, district) => {
   emailjs
-    .send('service_c17ljwf', 'template_1r4wb0q', { email, username, rcount, message }, 'cZVSDv5SxvThNvQw0')
+    .send('service_c17ljwf', 'template_1r4wb0q', { email, username, rcount, message , district}, 'cZVSDv5SxvThNvQw0')
     .then(
       (result) => {
         console.log(result.text);
@@ -48,7 +48,7 @@ const Jdmail = () => {
 
   const handleSubmit = (username, email, district, rcount) => {
     fetchallwell(district).then((message) => {
-      sendEmail(email, username, rcount, message);
+      sendEmail(email, username, rcount, message, district);
     });
   };
 
@@ -62,14 +62,14 @@ const Jdmail = () => {
 
   return (
     <div>
-      <h1>Data:</h1>
       <button onClick={sendMailToAll}>Send Mail to All</button>
       <ul>
         {data.map((item, index) => (
           <li key={index}>
             <div style={{ display: 'flex', flexDirection: 'row' }}>
               <p style={{ marginRight: '10px' }}>Username: {item.username}</p>
-              <p style={{ marginRight: '10px' }}>RCount: {item.rcount}</p>
+              <p style={{ marginRight: '10px' }}>District: {item.district}</p>
+              <p style={{ marginRight: '10px' }}>Remaining Count: {item.rcount}</p>
               <p>Email: {item.email}</p>
               <button onClick={() => handleSubmit(item.username, item.email, item.district, item.rcount)}>
                 Send Mail
