@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Link, useHistory } from 'react-router-dom';
+import { Link, useHistory, Navigate } from 'react-router-dom';
 import Welcome from './Welcome';
 import Admin from './Admin'
 const LoginPage = () => {
   const [successState, setSuccessState] = useState(false);
+  const [designation, setDesignation] = useState("");
+  const [gdistrict, setGdistrict] = useState("");
+  const [us, setus] = useState("");
+
+  
   const [loginData, setLoginData] = useState({
     username: '',
     password: '',
@@ -18,21 +23,16 @@ const LoginPage = () => {
 
     try {
       const response = await axios.post('http://localhost:8000/login', loginData);
-      const { success, message, designation } = response.data;
+      const { success, message, designation,district,username} = response.data;
       console.log("success", success);
       setSuccessState(success);
 
       if (success) {
         console.log('Login Successfully');
 
-        // Set userComponent based on designation
-        if (designation === 'admin') {
-          setUserComponent(<AdminComponent />);
-        } else if (designation === 'user') {
-          setUserComponent(<UserComponent />);
-        } else if (designation === 'employee') {
-          setUserComponent(<EmployeeComponent />);
-        }
+        setus(username);
+        setGdistrict(district);
+        setDesignation(designation);
       } else {
         console.log(message);
       }
@@ -56,6 +56,14 @@ const LoginPage = () => {
 
   return (
     <div>
+      {
+        designation==='admin' && (<Navigate to="/admin" replace={true} state={{district: gdistrict,name:us}}/>)
+        
+      }
+      {
+        designation==='employee' && (<Navigate to="/employee" replace={true} state={{district: gdistrict,name:us}}/>)
+        
+      }
       <h1>Login Page</h1>
       <form onSubmit={handleLoginSubmit}>
         <input
@@ -86,18 +94,5 @@ const LoginPage = () => {
   );
 };
 
-const AdminComponent = () => {
-  return ( <Admin/>)
-    {/* Add Admin-specific content here */}
-  
-};
-
-const UserComponent = () => {
-  return ( <Welcome/>)
-};
-
-const EmployeeComponent = () => {
-  return ( <Welcome/>)
-};
 
 export default LoginPage;

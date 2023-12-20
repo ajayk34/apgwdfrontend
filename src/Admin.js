@@ -1,21 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useLocation } from 'react-router-dom';
+import Transfer from './districtdirector/Transfer';
+import PendingList from './districtdirector/PendingList';
+import ApprovalList from './districtdirector/ApprovalList';
+import DDupdate from './districtdirector/DDupdate';
 
 const Admin = () => {
   const [search, setSearch] = useState('');
+  const [updateTimeFilter, setUpdateTimeFilter] = useState('');
   const [district, setDistrict] = useState([]);
+  const [checkedRecords, setCheckedRecords] = useState({});
+  const [selectAll, setSelectAll] = useState(false);
 
-  // Define the fetchData function
+  const location = useLocation();
+  const userDistrict = location.state.district;
+  const userName = location.state.name;
+
   const fetchData = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/welcome');
+      const response = await axios.get('http://localhost:8000/adminretrieve', {
+        params: { userDistrict },
+      });
       setDistrict(response.data);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
 
-  // Fetch data from the server when the component mounts
   useEffect(() => {
     fetchData();
   }, []);
@@ -24,11 +36,10 @@ const Admin = () => {
     try {
       const response = await axios.post('http://localhost:8000/adminupdate', {
         cityId: city._id,
-        newValue: city.value, // Use the specific updateValue for the city
+        newValue: city.value,
       });
 
       if (response.data.success) {
-        // Refresh the data after a successful update
         fetchData();
       } else {
         console.error('Update failed.');
@@ -45,7 +56,6 @@ const Admin = () => {
       });
 
       if (response.data.success) {
-        // Refresh the data after a successful update
         fetchData();
       } else {
         console.error('Update failed.');
@@ -53,6 +63,61 @@ const Admin = () => {
     } catch (error) {
       console.error('Error updating data:', error);
     }
+  };
+
+  const handleCheckboxChange = (cityId) => {
+    setCheckedRecords((prevCheckedRecords) => ({
+      ...prevCheckedRecords,
+      [cityId]: !prevCheckedRecords[cityId],
+    }));
+  };
+
+  const handleSelectAll = () => {
+    setSelectAll(!selectAll);
+
+    const filteredAndSortedCities = district
+      .filter(
+        (city) =>
+          city.name.includes(search) && city.updatetime.includes(updateTimeFilter)
+      )
+      .sort((a, b) => a.name.localeCompare(b.name) || a.updatetime.localeCompare(b.updatetime));
+
+    const newCheckedRecords = {};
+
+    filteredAndSortedCities.forEach((city) => {
+      newCheckedRecords[city._id] = !selectAll;
+    });
+
+    setCheckedRecords(newCheckedRecords);
+  };
+
+  const handleBulkAction = async (action) => {
+    const selectedCityIds = Object.keys(checkedRecords).filter(
+      (cityId) => checkedRecords[cityId]
+    );
+
+    if (selectedCityIds.length === 0) {
+      console.log('No records selected');
+      return;
+    }
+
+    try {
+      const response = await axios.post(`http://localhost:8000/admin${action}`, {
+        cityIds: selectedCityIds,
+      });
+
+      if (response.data.success) {
+        fetchData();
+      } else {
+        console.error(`${action} failed.`);
+      }
+    } catch (error) {
+      console.error(`Error ${action} data:`, error);
+    }
+  };
+
+  const handleUpdateTimeFilter = (e) => {
+    setUpdateTimeFilter(e.target.value);
   };
 
   return (
@@ -63,10 +128,32 @@ const Admin = () => {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-        /><br />
+          placeholder="City Name"
+        />
+        <br />
+
+        <input
+          type="text"
+          value={updateTimeFilter}
+          onChange={handleUpdateTimeFilter}
+          placeholder="Update Time"
+        />
+        <br />
+
+        <input
+          type="checkbox"
+          checked={selectAll}
+          onChange={handleSelectAll}
+        />
+        <label>Select All</label>
 
         {district
-          .filter((city) => city.name.includes(search))
+          .filter(
+            (city) =>
+              city.name.includes(search) &&
+              city.updatetime.includes(updateTimeFilter)
+          )
+          .sort((a, b) => a.name.localeCompare(b.name) || a.updatetime.localeCompare(b.updatetime))
           .map((city) => {
             const isRed = city.finalvalue === null && city.value !== null;
 
@@ -79,9 +166,13 @@ const Admin = () => {
                   color: isRed ? 'red' : 'green',
                 }}
               >
-                {city.name} {city.value} {city.finalvalue}
+                <input
+                  type="checkbox"
+                  checked={checkedRecords[city._id] || false}
+                  onChange={() => handleCheckboxChange(city._id)}
+                />
+                {city.name} {city.value} {city.finalvalue} {city.updatetime}
 
-                {/* Input for updating value */}
                 {isRed && (
                   <>
                     <button onClick={() => handleUpdate(city)}>
@@ -95,6 +186,20 @@ const Admin = () => {
               </div>
             );
           })}
+
+        <div>
+          <button onClick={() => handleBulkAction('submitall')}>
+            Submit Selected
+          </button>
+          <button onClick={() => handleBulkAction('cancelall')}>
+            Cancel Selected
+          </button>
+        </div>
+
+        <Transfer />
+        <PendingList data={userDistrict} />
+        <ApprovalList data={userDistrict} />
+        <DDupdate data={{ userDistrict, userName }} />
       </center>
     </div>
   );

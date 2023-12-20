@@ -1,19 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useLocation } from 'react-router-dom';
-import Jdmail from './Jointdirector/Jdmail';
-const Welcome = () => {
+
+const DDupdate = (props) => {
   const [search, setSearch] = useState('');
   const [district, setDistrict] = useState([]);
   const [updateValues, setUpdateValues] = useState({}); // Use an object to store update values for each city
-  // const {userDistrict}=props.data;
-  const location = useLocation();
-  const userDistrict = location.state.district;
-  const editname=location.state.name;
+  const userDistrict=props.data.userDistrict;  
+  const editname=props.data.userName;
   // Define the fetchData function
   const fetchData = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/employeeretrieve',{params:{userDistrict}});
+      const response = await axios.get('http://localhost:8000/ddretrieve',{params:{userDistrict}});
       setDistrict(response.data);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -27,7 +24,8 @@ const Welcome = () => {
 
   const handleUpdate = async (city) => {
     try {
-      const response = await axios.post('http://localhost:8000/update', {
+        console.log(editname);
+      const response = await axios.post('http://localhost:8000/ddupdate', {
         cityId: city._id,
         newValue: updateValues[city._id] || '', // Use the specific updateValue for the city
         editname
@@ -65,14 +63,7 @@ const Welcome = () => {
                 color: city.value === null ? 'red' : 'green',
               }}
             >
-              {city.name} {city.value}
-              {city.image && (
-        <img
-          src={city.image}
-          alt={`Image for ${city.name}`}
-          style={{ maxWidth: '100%', maxHeight: '100px', marginTop: '10px' }}
-        />
-      )}
+              {city.name} 
               {city.value === null && (
                 <>
                   <input
@@ -93,10 +84,8 @@ const Welcome = () => {
             </div>
           ))}
       </center>
-      <Jdmail/>
     </div>
-
   );
 };
 
-export default Welcome;
+export default DDupdate;
